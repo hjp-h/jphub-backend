@@ -1,0 +1,52 @@
+1.分析   
+      SELECT 
+        m.id id,m.content content,m.createAt createTime,m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name) author,(1)
+        /*
+        IF(表达式,表达式为真的时候的值,表达式为假的时候的值)
+        */
+				IF(COUNT(c.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id',c.id,'content',c.content,'createTime',c.createAt,
+                      'updateTime',c.updateAt, 
+                      'user',JSON_OBJECT('id',cu.id,'name',cu.name))
+        ),null) comments, (2)
+				IF(COUNT(l.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id',l.id,'name',l.name)
+        ),null) labels (3)
+      From moment m
+      LEFT JOIN user u ON m.user_id = u.id (1)
+      LEFT JOIN comment c ON c.moment_id = m.id (2)
+      /*
+      到这一步的时候 是一个一对多的关系
+      一个动态对应着三个评论 然后每一个评论又和后面的表进行左连接
+      导致后面 标签和评论都会有重复
+
+      总结：把重复的地方作为子查询 不影响后面的sql语句
+      */
+      LEFT JOIN user cu ON cu.id = c.user_id (2)
+      LEFT JOIN moment_label ml ON ml.moment_id = m.id (2)
+      LEFT JOIN label l ON l.id = ml.label_id (3)
+      WHERE m.id = 1
+      GROUP BY m.id
+2. 最终方案
+
+SELECT 
+        m.id id,m.content content,m.createAt createTime,m.updateAt updateTime,
+        JSON_OBJECT('id', u.id, 'name', u.name) author,	
+				IF(COUNT(l.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id',l.id,'name',l.name)
+        ),null) labels,
+        
+        /*子查询*/
+				(SELECT IF(COUNT(c.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id',c.id,'content',c.content,'createTime',c.createAt,
+                      'updateTime',c.updateAt, 
+                      'user',JSON_OBJECT('id',cu.id,'name',cu.name))
+        ),null) FROM comment c LEFT JOIN user cu ON cu.id = c.user_id WHERE c.moment_id = m.id) comments
+      From moment m
+      LEFT JOIN user u ON m.user_id = u.id
+      
+      LEFT JOIN moment_label ml ON ml.moment_id = m.id
+      LEFT JOIN label l ON l.id = ml.label_id 
+      WHERE m.id = 1
+      GROUP BY m.id
