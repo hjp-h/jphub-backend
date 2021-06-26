@@ -19,7 +19,7 @@ class UserService {
   async getAvatarByUserId(userId) {
     const statement = `SELECT * FROM avatar WHERE user_id = ?;`;
     const [result] = await connection.execute(statement, [userId])
-    return result[0];
+    return result.pop();
   }
 }
 
