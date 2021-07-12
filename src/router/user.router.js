@@ -1,7 +1,8 @@
 const Router = require('koa-router');
 const {
   create,
-  avatarInfo
+  avatarInfo,
+  backgroundImage
 } = require('../controller/user.controller');
 const {
   verifyUser,
@@ -15,4 +16,7 @@ userRouter.post('/register', verifyUser, handlePassword, create);
 
 // 查看用户头像
 userRouter.get('/:userId/avatar',avatarInfo)
+
+// 查看用户背景图片
+userRouter.get('/:userId/backgroundImage',backgroundImage)
 module.exports = userRouter;

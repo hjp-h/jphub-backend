@@ -11,6 +11,7 @@ const verifyLogin = async (ctx, next) => {
 
   // 1.获取用户名和密码
   const { name, password } = ctx.request.body;
+  console.log(name, password)
   // 2.判断用户名和密码是否为空
   if (!name || !password) {
     const error = new Error(errorTypes.NAME_OR_PASSWORD_IS_REQUIRED);
@@ -43,7 +44,13 @@ const verifyAuth = async (ctx, next) => {
     const error = new Error(errorTypes.UNAUTHORIZATION);
     return ctx.app.emit('error', error, ctx);
   }
-  const token = authorization.replace('Bearer ', '');
+  let token;
+  if(authorization.indexOf('Bearer ') !== -1) {
+     token = authorization.replace('Bearer ', '');
+  }else{
+    token = authorization;
+  }
+  console.log('token',token)
   // 2.验证token(id/name/iat/exp)
   try {
     // 解析token
@@ -53,6 +60,7 @@ const verifyAuth = async (ctx, next) => {
     ctx.user = result;
     await next();
   } catch (err) {
+    console.log(err)
     const error = new Error(errorTypes.UNAUTHORIZATION);
     ctx.app.emit('error', error, ctx);
   }

@@ -11,7 +11,7 @@ const {
   verifyAuth
 } = require('../middleware/auth.middleware');
 
-authRouter.post('/login', verifyLogin, login);
+authRouter.post('/JPHub/login', verifyLogin, login);
 authRouter.get('/testAuth', verifyAuth, success);
 
 module.exports = authRouter;

@@ -1,8 +1,10 @@
+const fs = require('fs');
 const path = require('path');
 const nanoid = require('nanoid');
 const Multer = require('koa-multer');
 const jimp = require('jimp');
-const { PICTURE_PATH } = require('../constants/file-path');
+const { PICTURE_PATH,BACKGROUND_PATH } = require('../constants/file-path');
+const userService = require('../service/user.service');
 // 配置文件上传
 const storage = Multer.diskStorage({
   destination: (req, file, cb) => {
@@ -35,7 +37,25 @@ const pictureResize = async (ctx,next) => {
   }
   await next();
 } 
+// 上传背景之前删除之前的那张背景图片
+const delPreBackground = async(ctx,next) => {
+  // 获取用户的id
+  const userId = ctx.user.id;
+  // 根据用户id获取背景图片信息
+  const result = await userService.getBackgroundImageByUserId(userId);
+  console.log('result',result)
+  if(result) {
+    const { filename } = result;
+    // 获取文件的路径
+    const filePath = BACKGROUND_PATH + filename;
+    // 删除之前的图片
+    fs.unlinkSync(filePath);
+  }
+  await next(); 
+}
+
 module.exports = {
   pictureHandler,
-  pictureResize
+  pictureResize,
+  delPreBackground
 }

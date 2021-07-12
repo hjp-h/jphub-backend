@@ -21,6 +21,12 @@ class UserService {
     const [result] = await connection.execute(statement, [userId])
     return result[0];
   }
+
+  async getBackgroundImageByUserId(userId) {
+    const statement = `SELECT * FROM bg_photo WHERE user_id = ?;`;
+    const [result] = await connection.execute(statement, [userId])
+    return result[0];
+  }
 }
 
 module.exports = new UserService();

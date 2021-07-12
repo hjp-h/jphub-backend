@@ -18,6 +18,7 @@ class FileController {
     ctx.body = { code: 200, message: '上传头像成功~', ...result };
   }
 
+  
   // 保存上传的动态信息
   async savePictureInfo(ctx, next) {
     console.log('进来了')
@@ -39,6 +40,26 @@ class FileController {
       console.log(err)
     }
 
+  }
+
+  // 保存上传的背景图片信息
+  async saveBackgroundImgInfo(ctx,next) {
+    console.log('saveBackgroundImgInfo')
+    // 获取用户的id
+    try{
+      const userId = ctx.user.id;
+      // 获取用户上传的背景图片的信息
+      const {filename, mimetype, size} = ctx.req.file;
+      // 将图片信息插入数据库
+      const result = await fileService.creatBackgroundImg(filename, mimetype, size,userId);
+      // 3.将图像地址插入用户表
+      const filePath = `${APP_HOST}:${APP_PORT}/user/${userId}/backgroundImage`
+      await fileService.updateBackgroundByUserId(filePath, userId)
+      // 4.返回结果
+      ctx.body = { code: 200, message: '上传背景图片成功~', ...result };
+    }catch(err){
+      console.log(err)
+    }
   }
 }
 
